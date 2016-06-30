@@ -1,8 +1,6 @@
-`include "../../src/core0.sv"
-
 module top(
     clk,
-    reset,
+    reset_b,
     switches,
     leds
 );
@@ -25,9 +23,9 @@ module top(
   /// Increasing this by 1 doubles the length of the conveyor buffer
   parameter CONVEYOR_ADDR_WIDTH = 4;
 
-  input clk, reset;
+  input clk, reset_b;
   input [15:0] switches;
-  output [15:0] leds;
+  output reg [15:0] leds;
 
   wire [PROGRAM_ADDR_WIDTH-1:0] programmem_addr;
   reg [7:0] programmem_read_value;
@@ -96,6 +94,10 @@ module top(
 
   reg [7:0] programmem [0:PROGRAM_SIZE-1];
   reg [WORD_WIDTH-1:0] mainmem [0:MEMORY_SIZE-1];
+  
+  wire reset;
+  
+  assign reset = ~reset_b;
 
   core0 #(
     .WORD_MAG(WORD_MAG),
@@ -155,8 +157,8 @@ module top(
   );
 
   initial begin
-    $readmemh("bin/program.list", programmem);
-    $readmemh("bin/data.list", mainmem);
+    $readmemh("../bin/program.list", programmem);
+    $readmemh("../bin/data.list", mainmem);
   end
 
   genvar gi;
@@ -168,6 +170,8 @@ module top(
   endgenerate
 
   always @(posedge clk) begin
+    if (global_send)
+        leds <= global_data & switches;
     if (programmem_we) begin
       for (int j = 0; j < WORD_WIDTH/8; j++)
         programmem[programmem_write_addr*(WORD_WIDTH/8) + j] <= progmem_individuals[j];

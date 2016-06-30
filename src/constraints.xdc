@@ -3,6 +3,8 @@
 ## - uncomment the lines corresponding to used pins
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
 
+set_property SEVERITY {Warning} [get_drc_checks LUTLP-1]
+
 # Clock signal
 #Bank = 35, Pin name = IO_L12P_T1_MRCC_35,					Sch name = CLK100MHZ
 set_property PACKAGE_PIN E3 [get_ports clk]
@@ -188,8 +190,8 @@ set_property PACKAGE_PIN P2 [get_ports {leds[15]}]
 
 ##Buttons
 #Bank = 15, Pin name = IO_L3P_T0_DQS_AD1P_15,				Sch name = CPU_RESET
-set_property PACKAGE_PIN C12 [get_ports reset]
-	set_property IOSTANDARD LVCMOS33 [get_ports reset]
+set_property PACKAGE_PIN C12 [get_ports reset_b]
+	set_property IOSTANDARD LVCMOS33 [get_ports reset_b]
 ##Bank = 15, Pin name = IO_L11N_T1_SRCC_15,					Sch name = BTNC
 #set_property PACKAGE_PIN E16 [get_ports btnC]
 	#set_property IOSTANDARD LVCMOS33 [get_ports btnC]

@@ -1,0 +1,12 @@
+[submodule "src/vga_controller"]
+	path = src/vga_controller
+	url = https://github.com/vadixidav/vga_controller
+[submodule "src/ps2_ascii"]
+	path = src/ps2_ascii
+	url = https://github.com/vadixidav/ps2_ascii
+[submodule "src/vga_ascii_terminal"]
+	path = src/vga_ascii_terminal
+	url = https://github.com/vadixidav/vga_ascii_terminal
+[submodule "src/core0"]
+	path = src/core0
+	url = https://github.com/uarc/core0

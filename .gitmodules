@@ -1,6 +1,3 @@
-[submodule "src/vga_controller"]
-	path = src/vga_controller
-	url = https://github.com/vadixidav/vga_controller
 [submodule "src/ps2_ascii"]
 	path = src/ps2_ascii
 	url = https://github.com/vadixidav/ps2_ascii

@@ -1,7 +1,3 @@
-`include "core0/src/core0.sv"
-`include "ps2_ascii/ps2_ascii.v"
-`include "vga_ascii_terminal/vga_ascii_terminal.v"
-
 module top(
     clk,
     reset_b,
@@ -28,16 +24,13 @@ module top(
   localparam MAIN_ADDR_WIDTH = 16;
   localparam MEMORY_SIZE = 1 << MAIN_ADDR_WIDTH;
   /// This is how many DCs fit on the astack
-  parameter ASTACK_DEPTH = 64;
+  localparam ASTACK_DEPTH = 64;
   /// This is how many recursions are possible with the cstack
   localparam CSTACK_DEPTH = 64;
   /// This is how many loops can be nested with the lstack
   localparam LSTACK_DEPTH = 7;
   /// Increasing this by 1 doubles the length of the conveyor buffer
   localparam CONVEYOR_ADDR_WIDTH = 4;
-
-  localparam STDIN = 32'h8000_0000;
-  localparam STDOUT = 32'h8000_0001;
 
   input clk, reset_b;
   input PS2Clk, PS2Data;
@@ -52,7 +45,7 @@ module top(
   wire [PROGRAM_ADDR_WIDTH-1:0] programmem_addr;
   reg [(8 + WORD_WIDTH)-1:0] programmem_read_value;
   wire [PROGRAM_ADDR_WIDTH-1:0] programmem_write_addr;
-  wire [WORD_WIDTH-1:0] programmem_write_mask;
+  wire [WORD_WIDTH/8-1:0] programmem_byte_write_mask;
   wire [WORD_WIDTH-1:0] programmem_write_value;
   wire programmem_we;
 
@@ -135,7 +128,7 @@ module top(
         programmem_addr,
         programmem_read_value,
         programmem_write_addr,
-        programmem_write_mask,
+        programmem_byte_write_mask,
         programmem_write_value,
         programmem_we,
 
@@ -203,7 +196,6 @@ module top(
 
   wire [(8 + WORD_WIDTH)-1:0] full_read_value;
   wire [WORD_WIDTH/8-1:0][7:0] individual_write_values;
-  wire [WORD_WIDTH/8-1:0][7:0] individual_write_masks;
 
   genvar i;
   generate
@@ -212,7 +204,6 @@ module top(
     end
     for (i = 0; i < WORD_WIDTH/8; i = i + 1) begin : INDIVIDUAL_OCTET_LOOP
       assign individual_write_values[i] = programmem_write_value[i*8+7:i*8];
-      assign individual_write_masks[i] = programmem_write_mask[i*8+7:i*8];
     end
   endgenerate
 
@@ -232,16 +223,13 @@ module top(
 
   // Handle SRAMs
   always @(posedge clk) begin
-    if (programmem_we) begin
-      for (int j = 0; j < WORD_WIDTH/8; j++)
-        programmem[programmem_write_addr + j] <=
-          (individual_write_values[j] & individual_write_masks[j]) |
-          (programmem[programmem_write_addr + j] & ~individual_write_masks[j]);
-    end
+    for (int j = 0; j < WORD_WIDTH/8; j++)
+        if (programmem_byte_write_mask[j] && programmem_we)
+            programmem[programmem_write_addr + j] <= individual_write_values[j];
     for (int j = 0; j < WORD_WIDTH/8 + 1; j++)
-      programmem_read_value <= full_read_value;
+        programmem_read_value <= full_read_value;
     if (mainmem_we)
-      mainmem[mainmem_write_addr] <= mainmem_write_value;
+        mainmem[mainmem_write_addr] <= mainmem_write_value;
     mainmem_read_value <= mainmem[mainmem_read_addr];
   end
 endmodule
